@@ -49,9 +49,9 @@
     "watch:labextension": "jupyter labextension watch ."
   },
   "dependencies": {
-    "@jupyter-widgets/base": "^2 || ^3 || ^4 || ^5 || ^6",
+    "@jupyter-widgets/base": "^2 || ^3 || ^4",
     "@lumino/application": "^1.7.3",
-    "@lumino/widgets": "^1.9.3",
+    "@lumino/widgets": "^1.8.1",
     "is-typedarray": "^1.0.0",
     "lightweight-charts": "^3.8.0",
     "underscore": "^1.8.3"
