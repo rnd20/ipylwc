@@ -15,15 +15,16 @@ class Series(DOMWidget):
     _view_module = Unicode(module_name).tag(sync=True)
     _view_module_version = Unicode(module_version).tag(sync=True)
 
-    # data = List([]).tag(sync=True)
     data = DataFrame(None, allow_none=True) \
         .tag(sync=True, **dataframe_serialization) \
         .valid(dataframe_warn_indexname)
+
     markers = DataFrame(None, allow_none=True) \
         .tag(sync=True, **dataframe_serialization) \
         .valid(dataframe_warn_indexname)
 
     options = Dict({}).tag(sync=True)
+
     type = Enum(['line', 'area','histrogram','bar','baseline','candlestick'], default_value='line').tag(sync=True)
 
     def _compare(self, a, b):

@@ -77,7 +77,7 @@ export class ChartView extends widgets.DOMWidgetView {
   }
 
   async add_series(model: SeriesModel) {
-    // Called when an series is added to the series list.
+    // Called when a series is added to the series list.
     const view = (await this.create_child_view(model)) as SeriesView;
     let series;
     switch (model.get('type')) {
@@ -100,8 +100,9 @@ export class ChartView extends widgets.DOMWidgetView {
         series = this.chart.addLineSeries(model.get('options'));
         break;
     }
-    series.setData(model.get('data'));
     view.series = series;
+    series.setData(model.get('data'));
+    series.setMarkers(model.get('markers'));
     return view;
   }
 }
