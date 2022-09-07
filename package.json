@@ -1,6 +1,6 @@
 {
   "name": "ipylwc",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Python interface to TradingView Lightweight Charts",
   "keywords": [
     "jupyter",
@@ -52,19 +52,20 @@
     "@jupyter-widgets/base": "^2 || ^3 || ^4 || ^5 || ^6",
     "@lumino/application": "^1.7.3",
     "@lumino/widgets": "^1.9.3",
+    "git-hooks": "^1.1.10",
     "is-typedarray": "^1.0.0",
-    "lightweight-charts": "^3.8.0",
+    "lightweight-charts": "github:tradingview/lightweight-charts#2ba2dc789952dd7a8444cf841869c7e10aff4568",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
     "@babel/core": "^7.5.0",
     "@babel/preset-env": "^7.5.0",
     "@jupyterlab/builder": "^3.0.0",
+    "@types/is-typedarray": "^1.0.0",
     "@types/jest": "^26.0.0",
     "@types/webpack-env": "^1.13.6",
     "@typescript-eslint/eslint-plugin": "^3.6.0",
     "@typescript-eslint/parser": "^3.6.0",
-    "@types/is-typedarray": "^1.0.0",
     "acorn": "^7.2.0",
     "css-loader": "^3.2.0",
     "eslint": "^7.4.0",
