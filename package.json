@@ -52,9 +52,11 @@
     "@jupyter-widgets/base": "^2 || ^3 || ^4 || ^5 || ^6",
     "@lumino/application": "^1.7.3",
     "@lumino/widgets": "^1.9.3",
+    "cross-env": "^7.0.3",
     "git-hooks": "^1.1.10",
     "is-typedarray": "^1.0.0",
-    "lightweight-charts": "github:tradingview/lightweight-charts#2ba2dc789952dd7a8444cf841869c7e10aff4568",
+    "lightweight-charts": "https://github.com/rnd20/lightweight-charts#master",
+    "tts": "^0.1.0",
     "underscore": "^1.8.3"
   },
   "devDependencies": {
@@ -82,6 +84,7 @@
     "style-loader": "^1.0.0",
     "ts-jest": "^26.0.0",
     "ts-loader": "^8.0.0",
+    "ttypescript": "^1.5.13",
     "typescript": "~4.1.3",
     "webpack": "^5.61.0",
     "webpack-cli": "^4.0.0"
