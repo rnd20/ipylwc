@@ -25,7 +25,7 @@ class Series(DOMWidget):
 
     options = Dict({}).tag(sync=True)
 
-    type = Enum(['line', 'area','histrogram','bar','baseline','candlestick'], default_value='line').tag(sync=True)
+    type = Enum(['line', 'area','histogram','bar','baseline','candlestick'], default_value='line').tag(sync=True)
 
     def _compare(self, a, b):
         # Compare dataframes properly
