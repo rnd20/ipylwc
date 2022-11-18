@@ -5,7 +5,6 @@
 # Distributed under the terms of the Modified BSD License.
 
 from .chart import Chart
-from ._version import __version__, version_info
 
 def _jupyter_labextension_paths():
     """Called by Jupyter Lab Server to detect if it is a valid labextension and

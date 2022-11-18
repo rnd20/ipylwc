@@ -66,12 +66,19 @@ export class ChartView extends widgets.DOMWidgetView {
     this.options_changed();
     this.model.on('change:options', this.options_changed, this);
     this.model.on('change:series', this.series_changed, this);
+    this.model.on('change:visibleRange', this.visibleRange_changed, this);
   }
 
   options_changed() {
     this.chart.applyOptions(this.model.get('options'));
     this.chart.timeScale().fitContent();
   }
+
+  visibleRange_changed(callback, context) {
+    // alert(callback);
+    this.chart.timeScale().setVisibleRange(this.model.get('visibleRange'));
+  }
+
   series_changed(callback, context) {
     alert(callback);
   }

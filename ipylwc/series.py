@@ -3,17 +3,19 @@ from ipywidgets import DOMWidget
 from traitlets import Unicode, Dict, Enum
 from traittypes import DataFrame
 
-from ._frontend import module_name, module_version
+from ._frontend import module_name
+from ._version import __version__
 from .traits import dataframe_serialization, dataframe_warn_indexname
 
+semver_range_frontend = "~" + __version__
 
 class Series(DOMWidget):
     _model_name = Unicode('SeriesModel').tag(sync=True)
     _model_module = Unicode(module_name).tag(sync=True)
-    _model_module_version = Unicode(module_version).tag(sync=True)
+    _model_module_version = Unicode(semver_range_frontend).tag(sync=True)
     _view_name = Unicode('SeriesView').tag(sync=True)
     _view_module = Unicode(module_name).tag(sync=True)
-    _view_module_version = Unicode(module_version).tag(sync=True)
+    _model_module_version = Unicode(semver_range_frontend).tag(sync=True)
 
     data = DataFrame(None, allow_none=True) \
         .tag(sync=True, **dataframe_serialization) \
@@ -25,7 +27,7 @@ class Series(DOMWidget):
 
     options = Dict({}).tag(sync=True)
 
-    type = Enum(['line', 'area','histogram','bar','baseline','candlestick'], default_value='line').tag(sync=True)
+    type = Enum(['line', 'area', 'histogram', 'bar', 'baseline', 'candlestick'], default_value='line').tag(sync=True)
 
     def _compare(self, a, b):
         # Compare dataframes properly
