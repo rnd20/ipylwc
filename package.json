@@ -50,6 +50,7 @@
   },
   "dependencies": {
     "@jupyter-widgets/base": "^2 || ^3 || ^4 || ^5 || ^6",
+    "@jupyter-widgets/base-manager": "^1",
     "@lumino/application": "^1.7.3",
     "@lumino/widgets": "^1.9.3",
     "cross-env": "^7.0.3",

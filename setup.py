@@ -9,27 +9,27 @@ from glob import glob
 import os
 from os.path import join as pjoin
 from setuptools import setup, find_packages
+import json
+from pathlib import Path
 
+import setuptools
 
 from jupyter_packaging import (
     create_cmdclass,
     install_npm,
     ensure_targets,
     combine_commands,
-    get_version,
     skip_if_exists
 )
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-
-
+HERE = Path(__file__).parent.resolve()
 
 
 # The name of the project
 name = 'ipylwc'
 
-# Get the version
-version = get_version(pjoin(name, '_version.py'))
+# Get the package info from package.json
+pkg_json = json.loads((HERE / "package.json").read_bytes())
 
 
 # Representative files that should exist after a successful build
@@ -66,8 +66,8 @@ cmdclass['jsdeps'] = skip_if_exists(jstargets, npm_install)
 
 setup_args = dict(
     name            = name,
-    description     = 'Python interface to TradingView Lightweight Charts',
-    version         = version,
+    description     = pkg_json["description"],
+    version         = pkg_json["version"],
     scripts         = glob(pjoin('scripts', '*')),
     cmdclass        = cmdclass,
     packages        = find_packages(),

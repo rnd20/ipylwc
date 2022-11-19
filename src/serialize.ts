@@ -1,6 +1,6 @@
 import * as _ from 'underscore';
 import isTypedArray from 'is-typedarray';
-import {ManagerBase} from "@jupyter-widgets/base";
+import { unpack_models } from '@jupyter-widgets/base';
 
 const typesToArray = {
   int8: Int8Array,
@@ -67,7 +67,7 @@ function serialize_typed_array(ar) {
   return wire;
 }
 
-function deserialize_array_or_json(data?:any, manager?: ManagerBase<any>) {
+function deserialize_array_or_json(data?:any, manager?: Parameters<typeof unpack_models>[1]) {
   if (!_.isArray(data) && !_.isObject(data)) {
     return data;
   }
@@ -85,7 +85,7 @@ function deserialize_array_or_json(data?:any, manager?: ManagerBase<any>) {
   throw new Error('Failed to deserialize data');
 }
 
-function serialize_array_or_json(data?:any, manager?: ManagerBase<any>) {
+function serialize_array_or_json(data?:any, manager?: Parameters<typeof unpack_models>[1]) {
   if (!_.isArray(data) && !_.isObject(data)) {
     return data;
   }
