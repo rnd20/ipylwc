@@ -10,6 +10,7 @@ import {
   IChartApi,
   ISeriesApi,
   SeriesType,
+  IPriceLine,
   // ISeriesApi,
   // SeriesType,
 } from 'lightweight-charts';
@@ -27,7 +28,6 @@ export class ChartModel extends widgets.DOMWidgetModel {
       _view_name: ChartModel.view_name,
       _view_module: ChartModel.view_module,
       _view_module_version: ChartModel.view_module_version,
-
       series: [],
     };
   }
@@ -49,21 +49,19 @@ export class ChartModel extends widgets.DOMWidgetModel {
 export class ChartView extends widgets.DOMWidgetView {
   private container: HTMLElement;
   private chart: IChartApi;
-  series_views: widgets.ViewList<widgets.DOMWidgetView>;
+  // series_views: widgets.ViewList<widgets.WidgetView>;
 
   render() {
+    console.log('rendering ChartView');
     this.container = document.createElement('div');
     this.container.setAttribute('id', 'chart-container');
+    while(this.el.firstChild) this.el.removeChild(this.el.firstChild);
     this.el.appendChild(this.container);
-
     this.chart = createChart(this.container, this.model.get('options'));
-    this.series_views = new widgets.ViewList(this.add_series, null, this);
-
-    this.series_views
-      .update(this.model.get('series'))
-      .then(() => this.chart.timeScale().fitContent());
 
     this.options_changed();
+    this.series_changed();
+
     this.model.on('change:options', this.options_changed, this);
     this.model.on('change:series', this.series_changed, this);
     this.model.on('change:visibleRange', this.visibleRange_changed, this);
@@ -71,21 +69,50 @@ export class ChartView extends widgets.DOMWidgetView {
 
   options_changed() {
     this.chart.applyOptions(this.model.get('options'));
-    this.chart.timeScale().fitContent();
   }
 
-  visibleRange_changed(callback, context) {
-    // alert(callback);
+  visibleRange_changed() {
     this.chart.timeScale().setVisibleRange(this.model.get('visibleRange'));
   }
 
-  series_changed(callback, context) {
-    alert(callback);
+  series_changed() {
+    const old_cids = new Array<string>();
+    const new_cids = new Array<string>();
+
+    const prev_series = this.model.previous('series');
+    const new_series = this.model.get('series');
+    console.log('series_changed', prev_series, new_series);
+
+    if (prev_series !== undefined) {
+      prev_series.forEach((e) => old_cids.push(e.cid));
+    }
+    if (new_series !== undefined) {
+      new_series.forEach((e) => new_cids.push(e.cid));
+    }
+
+    const diff_to_remove = old_cids.filter((x) => !new_cids.includes(x));
+    const diff_to_add = new_cids.filter((x) => !old_cids.includes(x));
+
+    if (prev_series !== undefined) {
+      prev_series
+        .filter((x) => diff_to_remove.includes(x.cid))
+        .forEach((x) =>
+          x.forEachView((x) => this.chart.removeSeries(x.series))
+        );
+    }
+    if (new_series !== undefined) {
+      new_series
+        .filter((x) => diff_to_add.includes(x.cid))
+        .forEach((x) => this.addSeries(x));
+    }
+
+    this.chart.timeScale().fitContent();
   }
 
-  async add_series(model: SeriesModel) {
+  async addSeries(model: SeriesModel) {
     // Called when a series is added to the series list.
-    const view = (await this.create_child_view(model)) as SeriesView;
+    console.log('creating actual series', model.get('options'));
+    const view = await this.create_child_view<SeriesView>(model);
     let series;
     switch (model.get('type')) {
       case 'area':
@@ -108,13 +135,12 @@ export class ChartView extends widgets.DOMWidgetView {
         break;
     }
     view.series = series;
-    series.setData(model.get('data'));
-    series.setMarkers(model.get('markers'));
+    view.chart = this.chart;
     return view;
   }
 }
 
-export class SeriesModel extends widgets.DOMWidgetModel {
+export class SeriesModel extends widgets.WidgetModel {
   defaults() {
     return {
       ...super.defaults(),
@@ -124,14 +150,23 @@ export class SeriesModel extends widgets.DOMWidgetModel {
       _view_name: SeriesModel.view_name,
       _view_module: SeriesModel.view_module,
       _view_module_version: SeriesModel.view_module_version,
+      pricelines: [],
     };
   }
 
   static serializers: widgets.ISerializers = {
     ...widgets.DOMWidgetModel.serializers,
     // Add any extra serializers here
+    pricelines: { deserialize: widgets.unpack_models },
   };
 
+  public forEachView(callback: (view: SeriesView) => void) {
+    for (const view_id in this.views) {
+      this.views[view_id].then((view: SeriesView) => {
+        callback(view);
+      });
+    }
+  }
   static model_name = 'SeriesModel';
   static model_module = MODULE_NAME;
   static model_module_version = MODULE_VERSION;
@@ -140,24 +175,140 @@ export class SeriesModel extends widgets.DOMWidgetModel {
   static view_module_version = MODULE_VERSION;
 }
 
-export class SeriesView extends widgets.DOMWidgetView {
+export class SeriesView extends widgets.WidgetView {
   series: ISeriesApi<SeriesType>;
+  chart: IChartApi;
 
   render() {
+    console.log('rendering SeriesView', this.model.cid);
+
+    this.options_changed();
+    this.data_changed();
+    this.markers_changed();
+    this.pricelines_changed();
+
     this.model.on('change:options', this.options_changed, this);
     this.model.on('change:data', this.data_changed, this);
     this.model.on('change:markers', this.markers_changed, this);
+    this.model.on('change:pricelines', this.pricelines_changed, this);
   }
 
   options_changed() {
-    this.series.applyOptions(this.model.get('options'));
+    if (this.model.get('options') !== undefined && this.series !== undefined) {
+      this.series.applyOptions(this.model.get('options'));
+      this.chart.timeScale().fitContent();
+    }
   }
 
   data_changed() {
-    this.series.setData(this.model.get('data'));
+    if (this.model.get('data') !== undefined && this.series !== undefined) {
+      this.series.setData(this.model.get('data'));
+      this.chart.timeScale().fitContent();
+    }
   }
 
   markers_changed() {
-    this.series.setMarkers(this.model.get('markers'));
+    if (this.model.get('markers') !== undefined && this.series !== undefined) {
+      this.series.setMarkers(this.model.get('markers'));
+    }
+  }
+
+  pricelines_changed() {
+    if (
+      this.model.get('pricelines') === undefined ||
+      this.series === undefined
+    ) {
+      return;
+    }
+
+    const old_cids = new Array<string>();
+    const new_cids = new Array<string>();
+
+    const prev_list = this.model.previous('pricelines');
+    const new_list = this.model.get('pricelines');
+
+    if (prev_list !== undefined) {
+      prev_list.forEach((e) => old_cids.push(e.cid));
+    }
+    if (new_list !== undefined) {
+      new_list.forEach((e) => new_cids.push(e.cid));
+    }
+
+    const diff_to_remove = old_cids.filter((x) => !new_cids.includes(x));
+    const diff_to_add = new_cids.filter((x) => !old_cids.includes(x));
+
+    if (prev_list !== undefined) {
+      prev_list
+        .filter((x) => diff_to_remove.includes(x.cid))
+        .forEach((x) =>
+          x.forEachView((x) => {
+            this.series.removePriceLine(x.priceline);
+          })
+        );
+    }
+    if (new_list !== undefined) {
+      new_list
+        .filter((x) => diff_to_add.includes(x.cid))
+        .forEach((x) => this.addPriceLine(x));
+    }
+  }
+
+  async addPriceLine(model: PriceLineModel) {
+    const view = await this.create_child_view<PriceLineView>(model);
+    if (this.series !== undefined) {
+      const pl = this.series.createPriceLine(model.get('options'));
+      view.options = model.get('options');
+      view.series = this.series;
+      view.priceline = pl;
+    }
+  }
+}
+
+export class PriceLineModel extends widgets.WidgetModel {
+  defaults() {
+    return {
+      ...super.defaults(),
+      _model_name: PriceLineModel.model_name,
+      _model_module: PriceLineModel.model_module,
+      _model_module_version: PriceLineModel.model_module_version,
+      _view_name: PriceLineModel.view_name,
+      _view_module: PriceLineModel.view_module,
+      _view_module_version: PriceLineModel.view_module_version,
+    };
+  }
+
+  static serializers: widgets.ISerializers = {
+    ...widgets.DOMWidgetModel.serializers,
+    // Add any extra serializers here
+  };
+
+  public forEachView(callback: (view: PriceLineView) => void) {
+    for (const view_id in this.views) {
+      this.views[view_id].then((view: PriceLineView) => {
+        callback(view);
+      });
+    }
+  }
+  static model_name = 'PriceLineModel';
+  static model_module = MODULE_NAME;
+  static model_module_version = MODULE_VERSION;
+  static view_name = 'PriceLineView'; // Set to null if no view
+  static view_module = MODULE_NAME; // Set to null if no view
+  static view_module_version = MODULE_VERSION;
+}
+
+export class PriceLineView extends widgets.WidgetView {
+  priceline: IPriceLine;
+  series: ISeriesApi;
+
+  render() {
+    // this.priceline = this.series.createPriceLine(this.model.get('options'));
+    this.model.on('change:options', this.options_changed, this);
+  }
+
+  options_changed(callback, context) {
+    if (this.priceline !== undefined) {
+      this.priceline.applyOptions(this.model.get('options'));
+    }
   }
 }
