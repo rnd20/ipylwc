@@ -55,16 +55,19 @@ export class ChartView extends widgets.DOMWidgetView {
     console.log('rendering ChartView');
     this.container = document.createElement('div');
     this.container.setAttribute('id', 'chart-container');
-    while(this.el.firstChild) this.el.removeChild(this.el.firstChild);
+    while (this.el.firstChild) {
+      this.el.removeChild(this.el.firstChild);
+    }
     this.el.appendChild(this.container);
     this.chart = createChart(this.container, this.model.get('options'));
 
-    this.options_changed();
     this.series_changed();
-
+    this.options_changed();
     this.model.on('change:options', this.options_changed, this);
     this.model.on('change:series', this.series_changed, this);
     this.model.on('change:visibleRange', this.visibleRange_changed, this);
+
+    this.chart.timeScale().fitContent();
   }
 
   options_changed() {
@@ -195,8 +198,32 @@ export class SeriesView extends widgets.WidgetView {
 
   options_changed() {
     if (this.model.get('options') !== undefined && this.series !== undefined) {
-      this.series.applyOptions(this.model.get('options'));
-      this.chart.timeScale().fitContent();
+      const model_options = this.model.get('options');
+
+      // convert to a function the value from python autoscaleInfoProvider
+      // to js function that has the value received from python, for example
+      // autoscaleInfoProvider: () => ({
+      // 	priceRange: {
+      // 		minValue: 0,
+      // 		maxValue: 200,
+      // 	},
+      // })
+      console.log(JSON.stringify(model_options.autoscaleInfoProvider));
+      if (model_options.hasOwnProperty('autoscaleInfoProvider')) {
+        model_options.autoscaleInfoProvider = new Function('return '+ JSON.stringify(model_options.autoscaleInfoProvider));
+      }
+
+      // if (model_options.hasOwnProperty('autoscaleInfoProvider')) {
+      //   model_options.autoscaleInfoProvider = () => ({
+      //     priceRange: {
+      //       minValue: model_options.autoscaleInfoProvider.priceRange.minValue,
+      //       maxValue: model_options.autoscaleInfoProvider.priceRange.maxValue,
+      //     },
+      //   });
+      // }
+      console.log(model_options);
+      this.series.applyOptions(model_options);
+      // this.chart.timeScale().fitContent();
     }
   }
 
@@ -299,7 +326,7 @@ export class PriceLineModel extends widgets.WidgetModel {
 
 export class PriceLineView extends widgets.WidgetView {
   priceline: IPriceLine;
-  series: ISeriesApi;
+  series: ISeriesApi<SeriesType>;
 
   render() {
     // this.priceline = this.series.createPriceLine(this.model.get('options'));

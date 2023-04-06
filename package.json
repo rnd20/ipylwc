@@ -1,6 +1,6 @@
 {
   "name": "ipylwc",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Python interface to TradingView Lightweight Charts",
   "keywords": [
     "jupyter",
@@ -54,9 +54,8 @@
     "@lumino/application": "^1.7.3",
     "@lumino/widgets": "^1.9.3",
     "cross-env": "^7.0.3",
-    "git-hooks": "^1.1.10",
     "is-typedarray": "^1.0.0",
-    "lightweight-charts": "https://github.com/rnd20/lightweight-charts#master",
+    "lightweight-charts": "^4.0.1",
     "tts": "^0.1.0",
     "underscore": "^1.8.3"
   },
